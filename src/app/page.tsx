@@ -1,54 +1,75 @@
 "use client"
 
+import type React from "react"
 import { useState, useEffect } from "react"
-import { onAuthStateChanged } from "firebase/auth"
+import { onAuthStateChanged, signOut } from "firebase/auth"
 import { getDoc, doc } from "firebase/firestore"
-import { auth, db } from "@/lib/firebase"
+import { auth, db } from "../firebase"
+import { useRouter } from "next/navigation"
 import RegistrationForm from "../components/registration-form"
 import LoginForm from "../components/login-form"
 import Roulette from "../components/roulette"
-import { useRouter } from "next/navigation"
 
-export default function Home() {
+const Home: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setIsAuthenticated(true)
         const userDoc = await getDoc(doc(db, "users", user.uid))
         if (userDoc.exists() && userDoc.data().userType === "admin") {
+          setIsAdmin(true)
           router.push("/admin")
         } else {
-          setIsAuthenticated(true)
+          setIsAdmin(false)
         }
       } else {
         setIsAuthenticated(false)
+        setIsAdmin(false)
       }
-      setIsLoading(false)
     })
 
     return () => unsubscribe()
   }, [router])
 
-  const handleAuthComplete = (isAdmin: boolean) => {
-    if (isAdmin) {
+  const handleAuthComplete = (isAdminUser: boolean) => {
+    setIsAuthenticated(true)
+    if (isAdminUser) {
+      setIsAdmin(true)
       router.push("/admin")
-    } else {
-      setIsAuthenticated(true)
     }
   }
 
-  if (isLoading) {
-    return <div>Carregando...</div>
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      setIsAuthenticated(false)
+      setIsAdmin(false)
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error)
+    }
+  }
+
+  if (isAdmin) {
+    return null // Não renderiza nada, pois o usuário será redirecionado para a página de admin
   }
 
   return (
     <div className="min-h-screen bg-yellow-400">
       {isAuthenticated ? (
         <div className="container mx-auto px-4 py-4 relative">
+          <div className="absolute top-4 right-4 flex items-center space-x-4">
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 transition duration-300"
+            >
+              Sair
+            </button>
+          </div>
           <Roulette />
         </div>
       ) : showLogin ? (
@@ -69,4 +90,6 @@ export default function Home() {
     </div>
   )
 }
+
+export default Home
 

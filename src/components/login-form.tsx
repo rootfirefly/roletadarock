@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { getDoc, doc } from "firebase/firestore"
-import { auth, db } from "../lib/firebase"
+import { auth, db } from "../firebase"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -20,25 +20,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginComplete }) => {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    if (!auth) {
-      setError("Erro de configuração. Por favor, tente novamente mais tarde.")
-    }
-  }, [])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
     try {
-      if (!auth) {
-        throw new Error("Firebase Auth is not initialized")
-      }
-
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
+      // Check if the user is an admin
       const userDoc = await getDoc(doc(db, "users", user.uid))
       const isAdmin = userDoc.exists() && userDoc.data().userType === "admin"
 
@@ -48,12 +39,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginComplete }) => {
         onLoginComplete(false)
       }
     } catch (error) {
+      console.error("Error logging in: ", error)
       if (error instanceof Error) {
-        if (error.message.includes("auth/api-key-not-valid")) {
-          setError("Erro de configuração. Por favor, contate o administrador.")
-        } else {
-          setError(`Falha no login: ${error.message}`)
-        }
+        setError(`Falha no login: ${error.message}`)
       } else {
         setError("Falha no login. Verifique seu email e senha.")
       }

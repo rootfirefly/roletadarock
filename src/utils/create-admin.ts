@@ -1,17 +1,27 @@
-import { createAdminUser } from "../utils/admin-utils"
+import { collection, addDoc } from "firebase/firestore"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { db, auth } from "../firebase"
 
-const createAdmin = async () => {
-  const name = "Admin Name"
-  const email = "admin@example.com"
-  const password = "securePassword123!"
-
+export const createAdminUser = async (name: string, email: string, password: string) => {
   try {
-    await createAdminUser(name, email, password)
+    // Create user in Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user
+
+    // Add user to Firestore with admin privileges
+    await addDoc(collection(db, "users"), {
+      uid: user.uid,
+      name,
+      email,
+      userType: "admin",
+      createdAt: new Date(),
+    })
+
     console.log("Admin user created successfully")
+    return user
   } catch (error) {
-    console.error("Failed to create admin user:", error)
+    console.error("Error creating admin user:", error)
+    throw error
   }
 }
-
-createAdmin()
 

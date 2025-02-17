@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { collection, query, where, getDocs, setDoc, doc } from "firebase/firestore"
 import { createUserWithEmailAndPassword } from "firebase/auth"
-import { db, auth } from "../lib/firebase"
+import { db, auth } from "../firebase"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
@@ -25,6 +25,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
     setIsLoading(true)
 
     try {
+      // Check if user already exists
       const usersRef = collection(db, "users")
       const q = query(usersRef, where("email", "==", email))
       const querySnapshot = await getDocs(q)
@@ -35,9 +36,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
         return
       }
 
+      // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, whatsapp)
       const user = userCredential.user
 
+      // Add user to Firestore
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
@@ -49,6 +52,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
 
       onRegistrationComplete()
     } catch (error) {
+      console.error("Error registering user: ", error)
       if (error instanceof Error) {
         setError(`Ocorreu um erro ao registrar: ${error.message}`)
       } else {

@@ -1,20 +1,17 @@
-import { initializeApp, getApps } from "firebase/app"
+import { initializeApp } from "firebase/app"
 import { getFirestore } from "firebase/firestore"
 import { getAuth } from "firebase/auth"
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyAGMEZRyqdtyjq9iSoAi6klOWEG7KOg_nM",
+  authDomain: "roletadafelicida.firebaseapp.com",
+  projectId: "roletadafelicida",
+  storageBucket: "roletadafelicida.firebasestorage.app",
+  messagingSenderId: "943591715136",
+  appId: "1:943591715136:web:131ff2e8cb114bf0238aa5",
 }
 
-console.log("Firebase API Key:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY)
-
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
 
