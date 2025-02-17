@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { getDoc, doc } from "firebase/firestore"
-import { auth, db } from "../firebase"
+import { auth, db } from "@/lib/firebase" // Atualizando o caminho do import
 
 interface AdminLoginProps {
   onLoginSuccess: () => void

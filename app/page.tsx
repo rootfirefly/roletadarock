@@ -1,7 +1,7 @@
 "use client"
 
-import AdminLogin from "../src/components/admin-login"
+import PrizeManagement from "../src/components/prize-management"
 
 export default function SyntheticV0PageForDeployment() {
-  return <AdminLogin />
+  return <PrizeManagement />
 }
