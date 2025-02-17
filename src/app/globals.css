@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .bg-yellow-pulse {
+    @apply bg-yellow-400;
+    animation: pulse-yellow 3s ease-in-out infinite;
+  }
+
+  .input-focus-effect {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .input-focus-effect:focus {
+    @apply transform -translate-y-0.5 shadow-lg;
+  }
+
+  .button-hover-effect {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .button-hover-effect:hover {
+    @apply transform -translate-y-0.5 shadow-lg;
+  }
+
+  .form-container {
+    @apply backdrop-blur-md bg-white bg-opacity-80;
+  }
+}
+
+@keyframes pulse-yellow {
+  0%,
+  100% {
+    background-color: #fbbf24;
+  }
+  50% {
+    background-color: #fcd34d;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#__next {
+  flex: 1;
+}
+
