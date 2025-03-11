@@ -1,12 +1,8 @@
-"use client"
-
+import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import React from "react"
-import { useRouter } from "next/router"
-import { onAuthStateChanged } from "firebase/auth"
-import { auth } from "../firebase"
+import Link from "next/link"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,28 +16,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const [user, setUser] = React.useState<any>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
-      setLoading(false)
-    })
-
-    return () => unsubscribe()
-  }, [])
-
-  React.useEffect(() => {
-    if (!loading && !user && router.pathname.startsWith("/admin")) {
-      router.push("/")
-    }
-  }, [user, loading, router])
-
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="pt-BR">
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <main className="flex-grow">{children}</main>
+        <footer className="bg-gray-800 text-white py-4">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-between items-center">
+              <p>&copy; {new Date().getFullYear()} Rockfeller Language Center. Todos os direitos reservados.</p>
+              <Link href="/politica-de-privacidade" className="hover:underline">
+                Política de Privacidade
+              </Link>
+            </div>
+          </div>
+        </footer>
+      </body>
     </html>
   )
 }

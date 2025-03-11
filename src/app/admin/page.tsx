@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation"
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { getDoc, doc, collection, getDocs, addDoc, updateDoc, deleteDoc } from "firebase/firestore"
 import { auth, db } from "../../firebase"
-import { Trash2, Edit, Plus, Save, X, Download, Archive, BarChart, Gift, Users, LogOut, QrCode } from "lucide-react"
-import QRCodeGenerator from "@/components/qr-code-generator"
+import { Trash2, Edit, Plus, Save, X, Download, BarChart, Gift, Users, LogOut, QrCode } from "lucide-react"
+import QRCodeGenerator from "../../components/qr-code-generator"
 
 interface Winner {
   id: string
@@ -35,6 +35,7 @@ const AdminPage: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [debugLogs, setDebugLogs] = useState<string[]>([])
+  const [displayCount, setDisplayCount] = useState(10)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -220,6 +221,10 @@ const AdminPage: React.FC = () => {
     </div>
   )
 
+  const handleLoadMore = () => {
+    setDisplayCount(winners.length) // Load all winners when button is clicked
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-yellow-100">
@@ -245,33 +250,14 @@ const AdminPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push("/admin/qr-code")}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center transition duration-150 ease-in-out"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
               >
                 <QrCode size={20} className="mr-2" />
                 Gerador de QR Code
               </button>
               <button
-                onClick={downloadSystemFiles}
-                disabled={isDownloading}
-                className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
-                  isDownloading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center transition duration-150 ease-in-out`}
-              >
-                {isDownloading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Baixando...
-                  </>
-                ) : (
-                  <>
-                    <Archive size={20} className="mr-2" />
-                    Download System Files
-                  </>
-                )}
-              </button>
-              <button
                 onClick={handleLogout}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center transition duration-150 ease-in-out"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center"
               >
                 <LogOut size={20} className="mr-2" />
                 Sair
@@ -285,7 +271,7 @@ const AdminPage: React.FC = () => {
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* QR Code Generator */}
-            <div className="bg-white overflow-hidden shadow-lg rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+            <div className="bg-white overflow-hidden shadow-lg rounded-lg">
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-blue-800 mb-4 flex items-center">
                   <BarChart className="mr-2 text-yellow-500" /> QR Code da Roleta
@@ -295,7 +281,7 @@ const AdminPage: React.FC = () => {
             </div>
 
             {/* Lista de Ganhadores */}
-            <div className="bg-white overflow-hidden shadow-lg rounded-lg md:col-span-2 transition duration-300 ease-in-out transform hover:scale-105">
+            <div className="bg-white overflow-hidden shadow-lg rounded-lg md:col-span-2">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-blue-800 flex items-center">
@@ -303,7 +289,7 @@ const AdminPage: React.FC = () => {
                   </h2>
                   <button
                     onClick={exportToCSV}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
                     <Download size={20} className="mr-2" />
                     Exportar CSV
@@ -325,8 +311,8 @@ const AdminPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {winners.map((winner) => (
-                        <tr key={winner.id} className="hover:bg-yellow-50 transition duration-150 ease-in-out">
+                      {winners.slice(0, displayCount).map((winner) => (
+                        <tr key={winner.id} className="transition duration-150 ease-in-out">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{winner.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{winner.premio}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -336,22 +322,29 @@ const AdminPage: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                  {winners.length > displayCount && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={handleLoadMore}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Carregar Mais
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Gerenciamento de Itens da Roleta */}
-            <div className="bg-white overflow-hidden shadow-lg rounded-lg md:col-span-3 transition duration-300 ease-in-out transform hover:scale-105">
+            <div className="bg-white overflow-hidden shadow-lg rounded-lg md:col-span-3">
               <div className="p-6">
                 <h2 className="text-xl font-semibold text-blue-800 mb-4 flex items-center">
                   <Gift className="mr-2 text-yellow-500" /> Itens da Roleta
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {prizes.map((prize) => (
-                    <div
-                      key={prize.id}
-                      className="bg-yellow-50 p-4 rounded-lg shadow transition duration-150 ease-in-out hover:shadow-md"
-                    >
+                    <div key={prize.id} className="bg-yellow-50 p-4 rounded-lg shadow">
                       {editingPrize && editingPrize.id === prize.id ? (
                         <div className="space-y-2">
                           <input
@@ -369,16 +362,10 @@ const AdminPage: React.FC = () => {
                             className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                           <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={handleSavePrize}
-                              className="text-green-600 hover:text-green-800 transition duration-150 ease-in-out"
-                            >
+                            <button onClick={handleSavePrize} className="text-green-600">
                               <Save size={20} />
                             </button>
-                            <button
-                              onClick={() => setEditingPrize(null)}
-                              className="text-red-600 hover:text-red-800 transition duration-150 ease-in-out"
-                            >
+                            <button onClick={() => setEditingPrize(null)} className="text-red-600">
                               <X size={20} />
                             </button>
                           </div>
@@ -390,16 +377,10 @@ const AdminPage: React.FC = () => {
                             <span className="ml-2 text-sm text-gray-500">Quantidade: {prize.quantity}</span>
                           </div>
                           <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleEditPrize(prize)}
-                              className="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out"
-                            >
+                            <button onClick={() => handleEditPrize(prize)} className="text-blue-600">
                               <Edit size={20} />
                             </button>
-                            <button
-                              onClick={() => handleDeletePrize(prize.id)}
-                              className="text-red-600 hover:text-red-800 transition duration-150 ease-in-out"
-                            >
+                            <button onClick={() => handleDeletePrize(prize.id)} className="text-red-600">
                               <Trash2 size={20} />
                             </button>
                           </div>
@@ -428,7 +409,7 @@ const AdminPage: React.FC = () => {
                       />
                       <button
                         onClick={handleAddPrize}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         <Plus size={20} className="mr-2" />
                         Adicionar

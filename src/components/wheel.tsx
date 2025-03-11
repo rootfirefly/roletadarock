@@ -96,9 +96,28 @@ const Wheel: React.FC<WheelProps> = ({ spinning, onSpinComplete, selectedPrizeIn
 
   const distributedPrizes = distributePrizes()
 
+  // Função para quebrar o texto em várias linhas
+  const wrapText = (text: string, maxLength: number) => {
+    const words = text.split(" ")
+    const lines: string[] = []
+    let currentLine = ""
+
+    words.forEach((word) => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? " " : "") + word
+      } else {
+        lines.push(currentLine)
+        currentLine = word
+      }
+    })
+    lines.push(currentLine)
+
+    return lines
+  }
+
   return (
-    <div className="relative w-[400px] h-[400px] mx-auto">
-      <motion.div className="w-full h-full" animate={controls}>
+    <div className="relative w-full pb-[100%]">
+      <motion.div className="absolute inset-0" animate={controls}>
         <svg viewBox="0 0 500 500" className="w-full h-full">
           {/* Fundo da roleta */}
           <circle cx="250" cy="250" r="250" fill="#1a365d" />
@@ -107,20 +126,25 @@ const Wheel: React.FC<WheelProps> = ({ spinning, onSpinComplete, selectedPrizeIn
           {generateWheelPaths()}
 
           {/* Textos dos prêmios */}
-          <g className="text-white fill-current" style={{ fontSize: "18px" }}>
+          <g className="text-white fill-current">
             {distributedPrizes.map((prize, index) => {
               const pos = calculateTextPosition(index)
+              const lines = wrapText(prize.name, 12)
               return (
-                <text
-                  key={`${prize.id}-${index}`}
-                  x={pos.x}
-                  y={pos.y}
-                  transform={`rotate(${pos.angle}, ${pos.x}, ${pos.y})`}
-                  textAnchor="middle"
-                  className="font-bold"
-                >
-                  {prize.name}
-                </text>
+                <g key={`${prize.id}-${index}`}>
+                  {lines.map((line, lineIndex) => (
+                    <text
+                      key={`${prize.id}-${index}-${lineIndex}`}
+                      x={pos.x}
+                      y={pos.y + lineIndex * 20 - (lines.length - 1) * 10}
+                      transform={`rotate(${pos.angle}, ${pos.x}, ${pos.y})`}
+                      textAnchor="middle"
+                      className="font-bold text-sm"
+                    >
+                      {line}
+                    </text>
+                  ))}
+                </g>
               )
             })}
           </g>

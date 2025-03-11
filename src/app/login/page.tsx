@@ -7,8 +7,8 @@ import LoginForm from "../../components/login-form"
 const LoginPage: React.FC = () => {
   const router = useRouter()
 
-  const handleLoginSuccess = (userType: string) => {
-    if (userType === "admin") {
+  const handleLoginComplete = (isAdmin: boolean) => {
+    if (isAdmin) {
       router.push("/admin")
     } else {
       router.push("/")
@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Login</h1>
-      <LoginForm onLoginSuccess={handleLoginSuccess} />
+      <LoginForm onLoginComplete={handleLoginComplete} />
     </div>
   )
 }

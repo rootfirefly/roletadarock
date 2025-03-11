@@ -33,10 +33,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginComplete }) => {
       const userDoc = await getDoc(doc(db, "users", user.uid))
       const isAdmin = userDoc.exists() && userDoc.data().userType === "admin"
 
+      onLoginComplete(isAdmin)
+
       if (isAdmin) {
         router.push("/admin")
       } else {
-        onLoginComplete(false)
+        router.push("/")
       }
     } catch (error) {
       console.error("Error logging in: ", error)
@@ -60,6 +62,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginComplete }) => {
           height={100}
           className="w-full h-auto"
           priority
+          quality={75}
         />
       </div>
       <motion.div

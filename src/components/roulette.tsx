@@ -65,6 +65,33 @@ const Roulette: React.FC = () => {
     setSpinning(false)
   }
 
+  const sendWebhook = async (prizeData: {
+    userId: string
+    name: string
+    email: string
+    whatsapp: string
+    premio: string
+  }) => {
+    try {
+      const response = await fetch("https://webhook.nexuinsolution.com.br/webhook/roleta", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(prizeData),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Webhook response:", data)
+    } catch (error) {
+      console.error("Error sending webhook:", error)
+    }
+  }
+
   const spin = async () => {
     if (!user) {
       setResult("Por favor, faça login para girar a roleta.")
@@ -117,6 +144,15 @@ const Roulette: React.FC = () => {
         hasSpun: true,
       })
 
+      // Send webhook
+      await sendWebhook({
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        whatsapp: user.whatsapp,
+        premio: prize.name,
+      })
+
       // Update local user state
       setUser({ ...user, hasSpun: true })
 
@@ -125,41 +161,45 @@ const Roulette: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md text-center">
-      <Wheel
-        spinning={spinning}
-        onSpinComplete={handleSpinComplete}
-        selectedPrizeIndex={selectedPrizeIndex}
-        prizes={prizes}
-      />
+    <div className="flex flex-col justify-center items-center min-h-screen bg-yellow-100 p-4">
+      <div className="w-full max-w-[300px] sm:max-w-[400px] bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <Wheel
+          spinning={spinning}
+          onSpinComplete={handleSpinComplete}
+          selectedPrizeIndex={selectedPrizeIndex}
+          prizes={prizes}
+        />
 
-      <div className="mt-8">
-        <button
-          onClick={spin}
-          disabled={spinning || prizes.length === 0 || !user || user.hasSpun}
-          className={`bg-blue-500 text-white font-bold py-2 px-4 rounded-full ${
-            spinning || prizes.length === 0 || !user || user.hasSpun
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-blue-600"
-          } transition duration-300`}
-        >
-          {spinning ? "Girando..." : "Girar a Roleta"}
-        </button>
+        <div className="mt-6">
+          <button
+            onClick={spin}
+            disabled={spinning || prizes.length === 0 || !user || user.hasSpun}
+            className={`w-full bg-blue-500 text-white font-bold py-3 px-6 rounded-full ${
+              spinning || prizes.length === 0 || !user || user.hasSpun
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-blue-600"
+            } transition duration-300`}
+          >
+            {spinning ? "Girando..." : "Girar a Roleta"}
+          </button>
+        </div>
+
+        {result && <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-md text-sm sm:text-base">{result}</div>}
+
+        {user && user.hasSpun && (
+          <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-md text-sm sm:text-base">
+            Você já girou a roleta. Cada usuário só pode girar uma vez.
+          </div>
+        )}
+
+        {prizes.length === 0 && (
+          <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-md text-sm sm:text-base">
+            Todos os prêmios acabaram. A roleta está desativada.
+          </div>
+        )}
+
+        <div className="mt-4 text-xs text-gray-500 text-center">*Consulte condições</div>
       </div>
-
-      {result && <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-md">{result}</div>}
-
-      {user && user.hasSpun && (
-        <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-md">
-          Você já girou a roleta. Cada usuário só pode girar uma vez.
-        </div>
-      )}
-
-      {prizes.length === 0 && (
-        <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-md">
-          Todos os prêmios acabaram. A roleta está desativada.
-        </div>
-      )}
     </div>
   )
 }

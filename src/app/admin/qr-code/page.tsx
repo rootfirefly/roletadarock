@@ -45,7 +45,7 @@ const QRCodePage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <button
           onClick={() => router.push("/admin")}
-          className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out"
+          className="mb-6 flex items-center text-blue-600 transition duration-150 ease-in-out"
         >
           <ArrowLeft size={20} className="mr-2" />
           Voltar para o Painel de Administração

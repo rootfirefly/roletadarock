@@ -7,6 +7,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { db, auth } from "../firebase"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
 
 interface RegistrationFormProps {
   onRegistrationComplete: () => void
@@ -18,11 +19,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
   const [whatsapp, setWhatsapp] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [privacyPolicyAccepted, setPrivacyPolicyAccepted] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
+
+    if (!privacyPolicyAccepted) {
+      setError("Você precisa aceitar a política de privacidade para se cadastrar.")
+      setIsLoading(false)
+      return
+    }
 
     try {
       // Check if user already exists
@@ -47,6 +55,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
         whatsapp,
         userType: "user",
         hasSpun: false,
+        privacyPolicyAccepted: true,
         createdAt: new Date(),
       })
 
@@ -129,6 +138,32 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegistrationCompl
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="privacy-policy"
+                name="privacy-policy"
+                type="checkbox"
+                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                checked={privacyPolicyAccepted}
+                onChange={(e) => setPrivacyPolicyAccepted(e.target.checked)}
+                required
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="privacy-policy" className="font-medium text-gray-700">
+                De acordo com a Lei nº 13.709 LGPD, eu autorizo receber contato e informações desta instituição
+              </label>
+              <p className="text-gray-500">
+                Ao marcar esta caixa, você concorda com nossa{" "}
+                <Link href="/politica-de-privacidade" className="text-yellow-600 hover:text-yellow-500">
+                  política de privacidade
+                </Link>
+                .
+              </p>
+            </div>
           </div>
 
           {error && (
